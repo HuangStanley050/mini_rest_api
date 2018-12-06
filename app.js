@@ -1,5 +1,6 @@
 const express = require("express");
 //const { body } = require("express-validator/check");
+const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const feedRoutes = require("./routes/feed.js");
 const app = express();
@@ -16,4 +17,10 @@ app.use((req, res, next) => {
   next();
 });
 app.use("/feed", feedRoutes);
-app.listen(8080, () => console.log("server running"));
+mongoose
+  .connect(
+    "mongodb+srv://admin:test1234@cluster0-cjli2.mongodb.net/messages?retryWrites=true",
+    { useNewUrlParser: true }
+  )
+  .then(result => app.listen(8080, () => console.log("server running")))
+  .catch(err => console.log(err));
