@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 const feedRoutes = require("./routes/feed.js");
+const port = process.env.PORT || 8081;
 
 const app = express();
 
@@ -57,5 +58,5 @@ mongoose
     connectionString.connect_string,
     { useNewUrlParser: true }
   )
-  .then(result => app.listen(8080, () => console.log("server running")))
+  .then(result => app.listen(port, () => console.log("server running")))
   .catch(err => console.log(err));

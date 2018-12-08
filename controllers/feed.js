@@ -3,12 +3,41 @@ const fs = require("fs");
 const path = require("path");
 const Post = require("../models/post.js");
 
-exports.getPosts = (req, res, next) => {
-  Post.find()
+/*
+Post.find()
     .then(posts => {
       res
         .status(200)
         .json({ message: "Fetch Posts successfully", posts: posts });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+*/
+
+exports.getPosts = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 2;
+  let totalItems;
+  Post.find()
+    .countDocuments()
+    .then(count => {
+      totalItems = count;
+      return Post.find()
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage);
+    })
+    .then(posts => {
+      res
+        .status(200)
+        .json({
+          message: "Fetch Posts successfully",
+          posts: posts,
+          totalItems: totalItems
+        });
     })
     .catch(err => {
       if (!err.statusCode) {
