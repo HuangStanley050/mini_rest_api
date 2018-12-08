@@ -54,7 +54,7 @@ exports.createPost = (req, res, next) => {
   const content = req.body.content;
   //const imageUrl = req.body.imageUrl;
   //console.log(title, content);
-  console.log(req.file.path);
+  //console.log(req.file.path);
   const post = new Post({
     title: title,
     content: content,
@@ -67,7 +67,7 @@ exports.createPost = (req, res, next) => {
   post
     .save()
     .then(result => {
-      console.log(result);
+      //console.log(result);
       res.status(201).json({
         message: "Post created",
         post: result
@@ -117,6 +117,32 @@ exports.updatePost = (req, res, next) => {
     })
     .then(result => {
       res.status(200).json({ message: "Post Updated", post: result });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.deletePost = (req, res, next) => {
+  const postId = req.params.postId;
+  Post.findById(postId)
+    .then(post => {
+      if (!post) {
+        const error = new Error("Could not find Post");
+        error.statusCode = 404;
+        throw error;
+      }
+      clearImage(post.imageUrl);
+      return Post.findByIdAndRemove(postId);
+    })
+    .then(result => {
+      console.log(result);
+      res.status(200).json({
+        message: "Post Deleted"
+      });
     })
     .catch(err => {
       if (!err.statusCode) {
