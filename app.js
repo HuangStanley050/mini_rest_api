@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 const feedRoutes = require("./routes/feed.js");
+const authRoutes = require("./routes/auth.js");
 const port = process.env.PORT || 8081;
 
 const app = express();
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use("/feed", feedRoutes);
+app.use("/auth", authRoutes);
 app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
