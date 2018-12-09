@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator/check");
 const fs = require("fs");
 const path = require("path");
 const Post = require("../models/post.js");
+const User = require("../models/user.js");
 
 /*
 Post.find()
@@ -31,13 +32,11 @@ exports.getPosts = (req, res, next) => {
         .limit(perPage);
     })
     .then(posts => {
-      res
-        .status(200)
-        .json({
-          message: "Fetch Posts successfully",
-          posts: posts,
-          totalItems: totalItems
-        });
+      res.status(200).json({
+        message: "Fetch Posts successfully",
+        posts: posts,
+        totalItems: totalItems
+      });
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -81,15 +80,12 @@ exports.createPost = (req, res, next) => {
   const imageUrl = req.file.path;
   const title = req.body.title;
   const content = req.body.content;
-  //const imageUrl = req.body.imageUrl;
-  //console.log(title, content);
-  //console.log(req.file.path);
+  let creator;
+
   const post = new Post({
     title: title,
     content: content,
-    creator: {
-      name: "Max"
-    },
+    creator: req.userId,
     imageUrl: imageUrl
   });
 
@@ -97,9 +93,18 @@ exports.createPost = (req, res, next) => {
     .save()
     .then(result => {
       //console.log(result);
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      creator = user;
+      user.post.push(post);
+      return user.save();
+    })
+    .then(result => {
       res.status(201).json({
-        message: "Post created",
-        post: result
+        message: "post created successfully",
+        post: post,
+        creator: { _id: creator._id, name: creator.name }
       });
     })
     .catch(err => {
