@@ -4,21 +4,6 @@ const path = require("path");
 const Post = require("../models/post.js");
 const User = require("../models/user.js");
 
-/*
-Post.find()
-    .then(posts => {
-      res
-        .status(200)
-        .json({ message: "Fetch Posts successfully", posts: posts });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-*/
-
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;
@@ -141,6 +126,11 @@ exports.updatePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error("Not authorized");
+        error.statusCode = 403;
+        throw error;
+      }
       if (imageUrl !== post.imageUrl) {
         clearImage(post.imageUrl);
       }
@@ -169,11 +159,23 @@ exports.deletePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error("Not authorized");
+        error.statusCode = 403;
+        throw error;
+      }
       clearImage(post.imageUrl);
       return Post.findByIdAndRemove(postId);
     })
     .then(result => {
-      console.log(result);
+      //console.log(result);
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      user.post.pull(postId);
+      return user.save();
+    })
+    .then(result => {
       res.status(200).json({
         message: "Post Deleted"
       });
