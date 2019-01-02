@@ -4,7 +4,9 @@ const connectionString = require("./mongoString.js");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const bodyParser = require("body-parser");
-
+const graphqlHttp = require("express-graphql");
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolver = require("./graphql/resolver");
 const port = process.env.PORT || 8081;
 
 const app = express();
@@ -41,6 +43,15 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   next();
 });
+
+app.use(
+  "/graphql",
+  graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
