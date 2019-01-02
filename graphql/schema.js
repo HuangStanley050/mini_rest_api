@@ -34,7 +34,7 @@ module.exports = buildSchema(`
   }
   
   type RootMutation {
-      creatUser(userInput: UserInputData) : User!
+      createUser(userInput: UserInputData) : User!
   }
   
   schema {
