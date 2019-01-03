@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const graphqlHttp = require("express-graphql");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolver");
+const isAuth = require("./middleware/is-auth");
 const port = process.env.PORT || 8081;
 
 const app = express();
@@ -43,6 +44,8 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   next();
 });
+
+app.use(isAuth);
 
 app.use(
   "/graphql",

@@ -78,6 +78,11 @@ module.exports = {
     };
   },
   createPost: ({ postInput }, req) => {
+    if (!req.isAuth) {
+      const error = new Error("Not authenticated");
+      error.code = 401;
+      throw error;
+    }
     const errors = [];
     if (
       validator.isEmpty(postInput.title) ||
@@ -99,23 +104,43 @@ module.exports = {
       error.code = 422;
       throw error;
     }
+
     const post = new Post({
       title: postInput.title,
       content: postInput.content,
       imageUrl: postInput.imageUrl
     });
-    return post
-      .save()
-      .then(res => {
-        return {
-          ...res._doc,
-          _id: res.id,
-          createdAt: res.createdAt.toISOString(),
-          updatedAt: res.updatedAt.toISOString()
-        };
+
+    return User.findById(req.userId)
+      .then(user => {
+        post.creator = user;
+        user.post.push(post);
+        return user.save();
+      })
+      .then(user => {
+        return post.save();
       })
       .catch(err => {
         throw err;
       });
+
+    // const post = new Post({
+    //   title: postInput.title,
+    //   content: postInput.content,
+    //   imageUrl: postInput.imageUrl
+    // });
+    // return post
+    //   .save()
+    //   .then(res => {
+    //     return {
+    //       ...res._doc,
+    //       _id: res.id,
+    //       createdAt: res.createdAt.toISOString(),
+    //       updatedAt: res.updatedAt.toISOString()
+    //     };
+    //   })
+    //   .catch(err => {
+    //     throw err;
+    //   });
   }
 };
